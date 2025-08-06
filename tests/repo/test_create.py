@@ -1,19 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.models.users import Users
-from app.core.database import Base
+from app.repo.users import create_user
+from app.core.database import SessionLocal
 
-engine = create_engine("sqlite:///:memory:")
-Session = sessionmaker(bind=engine)
-Base.metadata.create_all(engine)
 
-def test_create_user():
-    session = Session()
-    user = Users(name="Gaby", password="minha_senha123")
-    session.add(user)
-    session.commit()
-    session.refresh(user)
 
-    assert user.name == "Gaby"
+def test_repo_funcional():
+    db = SessionLocal()
+    user = create_user(db, "Gaby", "123")
+    assert user.id is not None
 
-    session.close()
+    db.close()
