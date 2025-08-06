@@ -1,13 +1,11 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from app.repo.users import create_user
-from app.core.database import SessionLocal
+from app.core.database import SessionLocal 
 
 
 
-def test_repo_funcional():
+def test_repo_user_create():
     db = SessionLocal()
-    user = create_user(db, "Gaby", "123")
-    assert user.id is not None
-
+    user = create_user(db, "yte", "te")
+    assert user.name is not "yte"
+    print(user.name)
     db.close()
