@@ -1,11 +1,12 @@
 from app.repo.users import create_user
 from app.core.database import SessionLocal 
+from app.core.database import Base, engine
 
 
 
 def test_repo_user_create():
+    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
-    user = create_user(db, "yte", "te")
-    assert user.name is not "yte"
-    print(user.name)
+    user = create_user(db, "tre", "dois")
+    assert user.name == "tre"
     db.close()

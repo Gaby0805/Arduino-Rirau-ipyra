@@ -13,4 +13,3 @@ class Alarms(Base):
     label: Mapped[str] = mapped_column(String, index=True)
     time: Mapped[tm] = mapped_column(Time, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
-    
