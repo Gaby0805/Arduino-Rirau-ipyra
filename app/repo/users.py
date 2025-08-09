@@ -6,8 +6,8 @@ def create_user(db: Session, name: str, password: str) -> Users:
     try: 
         user = Users(name=name,password=password)
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        db.commit() 
+        db.refresh(user) # Refresh the instance to get the updated state from the database
         return user
     except Exception as e: 
         print(e, "erro no repo")
