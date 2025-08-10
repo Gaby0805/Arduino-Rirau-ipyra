@@ -46,3 +46,5 @@ uvloop==0.21.0
 watchfiles==1.1.0
 websockets==15.0.1
 datetime==5.1
+pyjwt==2.10.1
+passlib==1.7.4
