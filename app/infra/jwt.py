@@ -9,31 +9,26 @@ from datetime import timedelta, datetime, timezone
 import jwt
 from jwt.exceptions import InvalidTokenError
 load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
-
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 fake_users_db = {
     "johndoe": {
-        "username": "johndoe",
-        "full_name": "John Doe",
-        "email": "johndoe@example.com",
+        "name": "johndoe",
         "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-        "disabled": False,
     }
 
 }
 class Token(BaseModel):
-    acess_code: str
+    access_token: str
     token_type: str
 
 
 class TokenData(BaseModel):
-    username: str | None = None
+    name: str | None = None
 
 class User(BaseModel):
     name: str
-    password: str
 
 class UserInDB(User):
     hashed_password: str
@@ -51,13 +46,13 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
+def get_user(db, name: str):
+    if name in db:
+        user_dict = db[name]
         return UserInDB(**user_dict) #cria e retorna uma instancia de UserInDb
 
-def authenticate_user(fake_db, username:str, password:str):
-    user = get_user(fake_db, username)
+def authenticate_user(fake_db, name:str, password:str):
+    user = get_user(fake_db, name)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -82,13 +77,13 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     )
     try: 
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
+        name = payload.get("sub")
+        if name is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(name=name)
     except InvalidTokenError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = get_user(fake_users_db, name=token_data.name)
     if user is None:
         raise credentials_exception
     return user
@@ -107,8 +102,8 @@ async def login_for_acess_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    acesss_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    acess_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.name}, expires_delta=acesss_token_expires
+        data={"sub": user.name}, expires_delta=acess_token_expires
     )
-    return Token(acess_token = access_token, token_type="bearer")
+    return Token(access_token = access_token, token_type="bearer")
