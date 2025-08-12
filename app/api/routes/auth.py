@@ -23,9 +23,9 @@ async def login_for_acess_token(
     user:User = jwt_service.authenticate_user(form_data.username, form_data.password)
     if not user:
         raise IncorrectCredentialsException
-    acess_token_expires = timedelta(minutes=jwt_service.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=jwt_service.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = jwt_service.create_access_token(
-        data={"sub": user.name}, expires_delta=acess_token_expires
+        data={"sub": user.name}, expires_delta=access_token_expires
     )
     return Token(access_token = access_token, token_type="bearer")
 
