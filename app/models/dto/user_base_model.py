@@ -5,3 +5,7 @@ class User(BaseModel):
 
 class UserInDB(User):
     password: str
+    
+class UserCreate(BaseModel):
+    name: str
+    password: str

@@ -1,19 +1,12 @@
 import os
-from typing import Annotated
 from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi import APIRouter, Depends, status
 from datetime import timedelta, datetime, timezone
 import jwt
 from jwt.exceptions import InvalidTokenError
-from app.repo import users
-from app.core.database import SessionLocal
 from app.exceptions.credentials_exception import CredentialsException
-from app.exceptions.incorrect_credentials_exception import IncorrectCredentialsException
-from app.exceptions.user_already_exists_exception import UserAlreadyExistsException 
 from app.services.user_service import UserService
-from app.models.dto.token_base_model import Token,TokenData
-from app.models.dto.user_base_model import User,UserInDB
+from app.models.dto.token_base_model import TokenData
+from app.models.dto.user_base_model import UserInDB
 class JWTService:
     def __init__(self):
         self.user_service = UserService()
@@ -52,7 +45,6 @@ class JWTService:
         return encoded_jwt
     
     async def get_current_user(self,token: str):
-    
         try: 
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             name = payload.get("sub")
