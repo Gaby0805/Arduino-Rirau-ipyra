@@ -2,7 +2,6 @@ from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, status
 from app.exceptions.incorrect_credentials_exception import IncorrectCredentialsException
-from app.exceptions.user_already_exists_exception import UserAlreadyExistsException 
 from app.models.dto.token_base_model import Token
 from app.models.dto.user_base_model import User,UserInDB
 from typing import Annotated
@@ -33,9 +32,6 @@ async def login_for_acess_token(
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def creat_user_with_hashed_password(user: UserCreate) -> UserInDB:
-    existing_user = jwt_service.get_user(user.name)
-    if existing_user:
-        raise UserAlreadyExistsException()
     hashed_password = jwt_service.get_password_hash(user.password)
     created_user = user_service.create_user(user.name, hashed_password)
     return UserInDB(**jwt_service.orm_to_dict(created_user))
