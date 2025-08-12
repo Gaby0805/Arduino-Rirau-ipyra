@@ -1,27 +1,29 @@
 # app/repositories/user_repository.py
 from sqlalchemy.orm import Session
 from app.models.users import Users
+class UserRepository:
 
-def create_user(db: Session, name: str, password: str) -> Users:
-        user = Users(name=name,password=password)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        return user
+    def create_user(self, name: str, password: str) -> Users:
+        with Session() as db:
+            user = Users(name=name,password=password)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            return user
 
-def get_user_by_id(db: Session, user_id: int) -> Users | None:
-    return db.query(Users).filter(Users.id == user_id).first()
+    def get_user_by_id(self, user_id: int) -> Users | None:
+        with Session() as db:
+            return db.query(Users).filter(Users.id == user_id).first()
 
-def get_all_users(db: Session) -> list[Users]:
-    return db.query(Users).all()
+    def get_all_users(self) -> list[Users]:
+        with Session() as db:
+            return db.query(Users).all()
 
-def delete_user(db: Session, user_id: int) -> bool:
-    user = get_user_by_id(db, user_id)
-    if user:
-        db.delete(user)
-        db.commit()
-        return True
-    return False
+    def delete_user(self, user: Users) -> None:
+        with Session() as db:
+                db.delete(user)
+                db.commit()
 
-def get_user_by_name(db: Session, user_name: str) -> Users| None:
-     return db.query(Users).filter(Users.name == user_name).first()
+    def get_user_by_name(self, user_name: str) -> Users| None:
+        with Session() as db:
+            return db.query(Users).filter(Users.name == user_name).first()
