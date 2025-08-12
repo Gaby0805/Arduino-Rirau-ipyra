@@ -11,22 +11,19 @@ class UserRepository:
             db.refresh(user)
             return user
 
-    def get_user_by_id(self,db: Session, user_id: int) -> Users | None:
+    def get_user_by_id(self, user_id: int) -> Users | None:
         with Session() as db:
             return db.query(Users).filter(Users.id == user_id).first()
 
-    def get_all_users(self,db: Session) -> list[Users]:
-        return db.query(Users).all()
-
-    def delete_user(self,db: Session, user_id: int) -> bool:
+    def get_all_users(self) -> list[Users]:
         with Session() as db:
-            user = self.get_user_by_id(db, user_id)
-            if user:
+            return db.query(Users).all()
+
+    def delete_user(self, user: Users) -> None:
+        with Session() as db:
                 db.delete(user)
                 db.commit()
-                return True
-            return False
 
-    def get_user_by_name(self,db: Session, user_name: str) -> Users| None:
+    def get_user_by_name(self, user_name: str) -> Users| None:
         with Session() as db:
             return db.query(Users).filter(Users.name == user_name).first()
