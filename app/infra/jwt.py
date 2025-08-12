@@ -1,6 +1,5 @@
 import os
 from typing import Annotated
-from pydantic import BaseModel
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, status
@@ -13,6 +12,8 @@ from app.exceptions.credentials_exception import CredentialsException
 from app.exceptions.incorrect_credentials_exception import IncorrectCredentialsException
 from app.exceptions.user_already_exists_exception import UserAlreadyExistsException 
 from app.services.user_service import UserService
+from app.models.dto.token_base_model import Token,TokenData
+from app.models.dto.user_base_model import User,UserInDB
 class JWTService:
     def __init__(self):
         self.user_service = UserService()
@@ -64,59 +65,3 @@ class JWTService:
         if user is None:
             raise  CredentialsException()
         return user
-    
-    
-    
-
-
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    
-class TokenData(BaseModel):
-    name: str | None = None
-
-class User(BaseModel):
-    name: str
-
-class UserInDB(User):
-    password: str
-
-
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-router = APIRouter(prefix="/token", tags=["auth"])
-
-
-
-
-@router.post("")
-async def login_for_acess_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-) -> Token:
-    user:User = authenticate_user(form_data.username, form_data.password)
-    if not user:
-        raise IncorrectCredentialsException
-    acess_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.name}, expires_delta=acess_token_expires
-    )
-    return Token(access_token = access_token, token_type="bearer")
-
-class UserCreate(BaseModel):
-    name: str
-    password: str
-@router.post("/create", status_code=status.HTTP_201_CREATED)
-async def creat_user_with_hashed_password(user: UserCreate) -> UserInDB:
-    existing_user = get_user(user.name)
-    if existing_user:
-        raise UserAlreadyExistsException()
-    hashed_password = get_password_hash(user.password)
-    db = SessionLocal()
-    created_user = users.create_user(db, user.name, hashed_password)
-    return UserInDB(**orm_to_dict(created_user))
-
-
