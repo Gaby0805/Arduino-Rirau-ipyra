@@ -4,19 +4,19 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from datetime import timedelta, datetime, timezone
 import jwt
 from jwt.exceptions import InvalidTokenError
 from app.repo import users
 from app.core.database import SessionLocal
-
+from app.exceptions.credentials_exception import CredentialsException
+from app.exceptions.incorrect_credentials_exception import IncorrectCredentialsException
+from app.exceptions.user_already_exists_exception import UserAlreadyExistsException 
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
-
-
 
 class Token(BaseModel):
     access_token: str
@@ -76,22 +76,18 @@ def create_access_token(data: dict, expires_delta:timedelta | None = None):
     return encoded_jwt
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    credentials_exception = HTTPException(
-        status_code = status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate":"Bearer"}
-    )
+
     try: 
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         name = payload.get("sub")
         if name is None:
-            raise credentials_exception
+            raise CredentialsException()
         token_data = TokenData(name=name)
     except InvalidTokenError:
-        raise credentials_exception
+        raise  CredentialsException()
     user = get_user(name=token_data.name)
     if user is None:
-        raise credentials_exception
+        raise  CredentialsException()
     return user
 
 
@@ -109,31 +105,20 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
         if username is None:
-            raise credentials_exception
+            raise  CredentialsException()
         token_data = TokenData(username=username)
     except InvalidTokenError:
-        raise credentials_exception
+        raise  CredentialsException()
     user = get_user(username=token_data.name)
     if user is None:
-        raise credentials_exception
+        raise  CredentialsException()
     return user
 
-
-async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
 
 
 @router.post("")
@@ -160,18 +145,10 @@ class UserCreate(BaseModel):
 async def creat_user_with_hashed_password(user: UserCreate) -> UserInDB:
     existing_user = get_user(user.name)
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User already exists"
-        )
+        raise UserAlreadyExistsException()
     hashed_password = get_password_hash(user.password)
     db = SessionLocal()
     created_user = users.create_user(db, user.name, hashed_password)
     return UserInDB(**orm_to_dict(created_user))
 
-@router.get("/users/me/", response_model=User)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
-    return current_user
 
