@@ -21,8 +21,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 class Token(BaseModel):
     access_token: str
     token_type: str
-
-
+    
 class TokenData(BaseModel):
     name: str | None = None
 
@@ -50,7 +49,6 @@ def orm_to_dict(obj):
 
 def get_user(name: str):
     db = SessionLocal()
-
     db_user = users.get_user_by_name(db, name)
     if db_user is None:
         return False
@@ -58,7 +56,7 @@ def get_user(name: str):
     return UserInDB(**orm_to_dict(db_user)) #cria e retorna uma instancia de UserInDb
 
 def authenticate_user( name:str, password:str):
-    user = get_user( name)
+    user = get_user(name)
     if not user:
         return False
     if not verify_password(password, user.password):
@@ -127,11 +125,7 @@ async def login_for_acess_token(
 ) -> Token:
     user:User = authenticate_user(form_data.username, form_data.password)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise IncorrectCredentialsException
     acess_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.name}, expires_delta=acess_token_expires
