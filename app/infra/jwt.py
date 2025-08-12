@@ -1,6 +1,5 @@
 import os
 from typing import Annotated
-from dotenv import load_dotenv
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -13,10 +12,64 @@ from app.core.database import SessionLocal
 from app.exceptions.credentials_exception import CredentialsException
 from app.exceptions.incorrect_credentials_exception import IncorrectCredentialsException
 from app.exceptions.user_already_exists_exception import UserAlreadyExistsException 
-load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+from app.services.user_service import UserService
+class JWTService:
+    def __init__(self):
+        self.user_service = UserService()
+        self.SECRET_KEY = os.getenv("SECRET_KEY")
+        self.ALGORITHM = os.getenv("ALGORITHM")
+        self.ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto" )
+
+    def verify_password(self,plain_password, hashed_password):
+        return self.pwd_context.verify(plain_password, hashed_password)
+
+    def get_password_hash(self, password):
+        return self.pwd_context.hash(password)
+    
+    def orm_to_dict(obj):
+        return {c.key: getattr(obj, c.key) for c in obj.__table__.columns}
+    
+    def get_user(self,name: str):
+        db_user = self.user_service.get_user_by_name(name)
+        return UserInDB(**self.orm_to_dict(db_user)) #cria e retorna uma instancia de UserInDb
+    
+    def authenticate_user(self, name:str, password:str):
+        user = self.get_user(name)
+        if not self.verify_password(password, user.password):
+            return False
+        return user
+    
+    def create_access_token(self, data: dict, expires_delta:timedelta | None = None):
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.now(timezone.utc) + expires_delta
+        else:
+            expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        to_encode.update({"exp": expire})
+        encoded_jwt = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        return encoded_jwt
+    
+    async def get_current_user(self,token: str):
+    
+        try: 
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            name = payload.get("sub")
+            if name is None:
+                raise CredentialsException()
+            token_data = TokenData(name=name)
+        except InvalidTokenError:
+            raise  CredentialsException()
+        user = self.get_user(name=token_data.name)
+        if user is None:
+            raise  CredentialsException()
+        return user
+    
+    
+    
+
+
+
 
 class Token(BaseModel):
     access_token: str
@@ -32,90 +85,11 @@ class UserInDB(User):
     password: str
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto" )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 router = APIRouter(prefix="/token", tags=["auth"])
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
-
-def orm_to_dict(obj):
-    return {c.key: getattr(obj, c.key) for c in obj.__table__.columns}
-
-def get_user(name: str):
-    db = SessionLocal()
-    db_user = users.get_user_by_name(db, name)
-    if db_user is None:
-        return False
-    
-    return UserInDB(**orm_to_dict(db_user)) #cria e retorna uma instancia de UserInDb
-
-def authenticate_user( name:str, password:str):
-    user = get_user(name)
-    if not user:
-        return False
-    if not verify_password(password, user.password):
-        return False
-    return user
-
-def create_access_token(data: dict, expires_delta:timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-
-    try: 
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        name = payload.get("sub")
-        if name is None:
-            raise CredentialsException()
-        token_data = TokenData(name=name)
-    except InvalidTokenError:
-        raise  CredentialsException()
-    user = get_user(name=token_data.name)
-    if user is None:
-        raise  CredentialsException()
-    return user
-
-
-
-
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
-            raise  CredentialsException()
-        token_data = TokenData(username=username)
-    except InvalidTokenError:
-        raise  CredentialsException()
-    user = get_user(username=token_data.name)
-    if user is None:
-        raise  CredentialsException()
-    return user
 
 
 
