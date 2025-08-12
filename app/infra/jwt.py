@@ -7,8 +7,11 @@ from app.exceptions.credentials_exception import CredentialsException
 from app.services.user_service import UserService
 from app.models.dto.token_base_model import TokenData
 from app.models.dto.user_base_model import UserInDB
+from dotenv import load_dotenv
+
 class JWTService:
     def __init__(self):
+        load_dotenv()
         self.user_service = UserService()
         self.SECRET_KEY = os.getenv("SECRET_KEY")
         self.ALGORITHM = os.getenv("ALGORITHM")
@@ -21,7 +24,7 @@ class JWTService:
     def get_password_hash(self, password):
         return self.pwd_context.hash(password)
     
-    def orm_to_dict(obj):
+    def orm_to_dict(self, obj):
         return {c.key: getattr(obj, c.key) for c in obj.__table__.columns}
     
     def get_user(self,name: str):
