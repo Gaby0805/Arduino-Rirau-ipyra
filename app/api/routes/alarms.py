@@ -18,7 +18,7 @@ async def create_alarm(
     alarm: AlarmCreate,
     current_user: User = Depends(get_current_user),
 ):
-    return service.create_alarm(alarm.label, alarm.time, alarm.is_active)
+    return service.create_alarm(alarm.label, alarm.time, current_user.name, alarm.is_active)
 
 
 @router.get("/", response_model=List[AlarmResponse])
