@@ -6,6 +6,7 @@ from app.exceptions.alarm_not_found_exception import AlarmNotFoundException
 from pydantic import conlist
 from app.services.user_service import UserService
 from app.services.alarms_days_service import AlarmsDaysService
+from app import scheduler
 class AlarmsService:
     def __init__(self):
         self.repository = AlarmsRepository()
@@ -18,7 +19,7 @@ class AlarmsService:
         #aqui nao é o melhor jeito de se fazer, o certo é escrever uma query personalizada
         for day in days:
             self.alarms_days_service.create_alarm_day(alarm.id, day)
-            
+        scheduler.load_alarms()
         return  {
         "id": alarm.id,
         "label": alarm.label,

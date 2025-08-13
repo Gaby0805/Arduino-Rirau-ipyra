@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, Time, Boolean, ForeignKey
 from dataclasses import dataclass
 from app.core.database import Base
@@ -14,3 +14,5 @@ class Alarms(Base):
     time: Mapped[tm] = mapped_column(Time, index=True)
     user_id: Mapped[int]  = mapped_column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    
+    days = relationship("Alarms_days", backref="alarm", cascade="all, delete-orphan")
