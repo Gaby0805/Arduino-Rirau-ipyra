@@ -17,8 +17,8 @@ from contextlib import asynccontextmanager
 from app.scheduler import scheduler, load_alarms
 
 origins = [
-    "http://localhost:8080"
-    "http://localhost:3333"
+    "http://localhost:8080",
+    "http://localhost:3333",
     "http://localhost:3000"
 ]
 
