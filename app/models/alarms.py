@@ -15,4 +15,4 @@ class Alarms(Base):
     user_id: Mapped[int]  = mapped_column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
     
-    days = relationship("Alarms_days", backref="alarm", cascade="all, delete-orphan")
+    days = relationship("Alarms_days", backref="alarm", cascade="all, delete-orphan", lazy="joined")
