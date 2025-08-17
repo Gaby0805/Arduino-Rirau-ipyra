@@ -1,6 +1,6 @@
 from pydantic import BaseModel, conlist, field_validator
 from datetime import time as tm
-from typing import List
+from typing import Optional
 class AlarmCreate(BaseModel):
     label: str
     time: tm
@@ -18,3 +18,7 @@ class AlarmResponse(AlarmCreate):
     user_id: int
     class Config:
         orm_mode = True
+
+
+class AlarmUpdate(BaseModel):
+    is_active: bool

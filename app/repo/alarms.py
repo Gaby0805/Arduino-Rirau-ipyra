@@ -29,3 +29,13 @@ class AlarmsRepository:
     def get_alarm_by_label(self, label: str) -> Alarms | None:
         with SessionLocal() as db:
             return db.query(Alarms).filter(Alarms.label == label).first()
+        
+    def update_is_active(self, alarm_id: int, is_active: bool):
+        with SessionLocal() as db:
+            alarm = db.query(Alarms).filter(Alarms.id == alarm_id).first()
+            if not alarm:
+                return None
+            alarm.is_active = is_active
+            db.commit()
+            db.refresh(alarm)
+            return alarm

@@ -3,7 +3,7 @@ from typing import List
 from datetime import time as tm
 
 from app.models.alarms import Alarms
-from app.models.dto.alarms_base_model import AlarmCreate, AlarmResponse
+from app.models.dto.alarms_base_model import AlarmCreate, AlarmResponse, AlarmUpdate
 from app.services.alarm_service import AlarmsService
 from app.models.dto.user_base_model import User
 from app.api.routes.auth import get_current_user
@@ -42,3 +42,11 @@ async def delete_alarm(
     current_user: User = Depends(get_current_user),
 ):
     service.delete_alarm(alarm_id)
+    
+@router.patch("/{alarm_id}", response_model=AlarmResponse)
+async def update_alarm_status(
+    alarm_id: int,
+    status_update: AlarmUpdate,
+    current_user: User = Depends(get_current_user),
+):
+    return service.update_alarm_status(alarm_id, status_update.is_active)

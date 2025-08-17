@@ -65,3 +65,16 @@ class AlarmsService:
         if alarm is None:
             raise AlarmNotFoundException()
         return self.to_response(alarm)
+    
+    def update_alarm_status(self, alarm_id: int, is_active: bool) -> dict:
+        alarm = self.repository.get_alarm_by_id(alarm_id)
+        if not alarm:
+            raise AlarmNotFoundException()
+        
+        alarm.is_active = is_active
+        self.repository.update_is_active(alarm_id=alarm_id, is_active=is_active)  # ou commit direto no repositório
+        
+        # Se você tiver scheduler
+        scheduler.load_alarms()
+        
+        return self.to_response(alarm)
