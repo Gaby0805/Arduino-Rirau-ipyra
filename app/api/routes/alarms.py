@@ -42,3 +42,12 @@ async def delete_alarm(
     current_user: User = Depends(get_current_user),
 ):
     service.delete_alarm(alarm_id)
+
+
+@router.post("/trigger")
+async def activate_alarm():
+    return await service.trigger_alarm()  # precisa do await!
+
+@router.get("/activate")
+def get_last_command():
+    return service.get_command()

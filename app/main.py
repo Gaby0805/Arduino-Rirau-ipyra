@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.routes import auth, alarms_days, alarms
+from app.api.routes import auth, alarms_days, alarms, websocket
 from app.infra import jwt
 from app.core.database import Base, engine
 from dotenv import load_dotenv
@@ -17,9 +17,7 @@ from contextlib import asynccontextmanager
 from app.scheduler import scheduler, load_alarms
 
 origins = [
-    "http://localhost:8080",
-    "http://localhost:3333",
-    "http://localhost:3000"
+    "*"
 ]
 
 
@@ -39,7 +37,6 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
     print("🛑 Scheduler finalizado.")
 
-# Cria a aplicação já passando o lifespan
 app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
@@ -51,7 +48,7 @@ app.add_middleware(
 )
 
 
-# Inclui as rotas
 app.include_router(auth.router)
 app.include_router(alarms.router)
 app.include_router(alarms_days.router)
+app.include_router(websocket.router)

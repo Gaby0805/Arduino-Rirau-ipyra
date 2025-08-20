@@ -1,4 +1,5 @@
 from datetime import time as tm
+import logging
 from typing import List
 from app.models.alarms import Alarms
 from app.repo.alarms import AlarmsRepository
@@ -7,6 +8,7 @@ from pydantic import conlist
 from app.services.user_service import UserService
 from app.services.alarms_days_service import AlarmsDaysService
 from app import scheduler
+from app.core.manager import websocket_manager 
 class AlarmsService:
     def __init__(self):
         self.repository = AlarmsRepository()
@@ -48,3 +50,16 @@ class AlarmsService:
         if alarm is None:
             raise AlarmNotFoundException()
         return alarm
+    
+    async def trigger_alarm(self ):
+        command = f"ALARME"
+
+        logging.info(f" Enviando via WebSocket")
+        await websocket_manager.send_to_arduino(command)
+        self.last_command = command
+        return {"status": "ok", "command": command}
+
+    def get_command(self):
+        cmd = self.last_command
+        self.last_command = None
+        return {"command": cmd}
