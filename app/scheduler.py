@@ -2,9 +2,11 @@ import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from app.core.manager import websocket_manager
 from datetime import datetime
 from app.core.database import SessionLocal
 from app.models import Alarms
+from pytz import timezone
 
 # Configuração básica de logs
 logging.basicConfig(
@@ -12,14 +14,16 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
+# Define o timezone de MS
+tz_ms = timezone("America/Campo_Grande")
 
-scheduler = AsyncIOScheduler()
+# Cria o scheduler com timezone configurado
+scheduler = AsyncIOScheduler(timezone=tz_ms)
 
-
-def trigger_alarm(alarm_id: int):
+async def trigger_alarm(alarm_id: int):
     """Função executada quando o alarme dispara."""
     logging.info(f"⏰ Disparando alarme ID={alarm_id} no horário {datetime.now()}")
-    # websocket_manager.send_to_arduino(f"ALARME:{alarm_id}")
+    await websocket_manager.send_to_arduino(f"ALARME:{alarm_id}")
 
 
 def load_alarms():

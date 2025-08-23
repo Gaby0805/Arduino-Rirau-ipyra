@@ -24,17 +24,19 @@ origins = [
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Startup
     scheduler.start()
     print("🚀 Scheduler iniciado.")
 
     load_alarms()
     print("🎯 Alarmes carregados e agendados.")
 
-    yield  # Aqui a API começa a aceitar requisições
+    yield  # A API começa a aceitar requisições
 
-    # Quando a API está desligando
+    # Shutdown
     scheduler.shutdown()
     print("🛑 Scheduler finalizado.")
+
 
 app = FastAPI(lifespan=lifespan)
 
