@@ -44,10 +44,10 @@ async def delete_alarm(
     service.delete_alarm(alarm_id)
 
 
-@router.post("/trigger")
+@router.post("/test/trigger")
 async def activate_alarm():
     return await service.trigger_alarm()  # precisa do await!
 
-@router.get("/activate")
-def get_last_command():
+@router.get("/test/activate")
+def getcommand():
     return service.get_command()

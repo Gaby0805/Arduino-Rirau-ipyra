@@ -17,17 +17,16 @@ from contextlib import asynccontextmanager
 from app.scheduler import scheduler, load_alarms
 
 origins = [
-    "*"
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://localhost:3000"
 ]
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Inicia o scheduler antes de adicionar jobs
     scheduler.start()
     print("🚀 Scheduler iniciado.")
 
-    # Carrega e agenda alarmes
     load_alarms()
     print("🎯 Alarmes carregados e agendados.")
 

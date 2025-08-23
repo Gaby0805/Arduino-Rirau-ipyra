@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 from datetime import datetime
 from app.core.database import SessionLocal
 from app.models import Alarms
-
+from app.core.manager import websocket_manager
 # Configuração básica de logs
 logging.basicConfig(
     level=logging.INFO,
@@ -19,8 +19,8 @@ scheduler = AsyncIOScheduler()
 def trigger_alarm(alarm_id: int):
     """Função executada quando o alarme dispara."""
     logging.info(f"⏰ Disparando alarme ID={alarm_id} no horário {datetime.now()}")
-    # Aqui você envia via WebSocket/MQTT para o Arduino
-    # websocket_manager.send_to_arduino(f"ALARME:{alarm_id}")
+    websocket_manager.send_to_arduino("ALARM")
+
 
 
 def load_alarms():
