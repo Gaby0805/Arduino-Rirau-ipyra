@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: arduino-rirau-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+      - ./data:/app/data
+    working_dir: /app
+    environment:
+      - DATABASE_URL=sqlite:///data/arduino-rirau-ipyra.db
+    depends_on:
+      - db-init
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  db-init:
+    build:
+      context: .
+    container_name: db_migrations
+    volumes:
+      - ./:/app
+      - ./data:/app/data
+    working_dir: /app
+    environment:
+      - DATABASE_URL=sqlite:///data/arduino-rirau-ipyra.db
+    command: alembic upgrade head
