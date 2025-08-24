@@ -33,7 +33,7 @@ def load_alarms():
     try:
         with SessionLocal() as session:
             logging.info("📂 Sessão com o banco iniciada.")
-
+# 
             stmt = (
                 select(Alarms)
                 .where(Alarms.is_active == True)

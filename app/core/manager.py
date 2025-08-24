@@ -1,6 +1,6 @@
 from fastapi import WebSocket
 
-# manager.py
+# manager
 class WebSocketManager:
     def __init__(self):
         self.connection: WebSocket | None = None  

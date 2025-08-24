@@ -21,7 +21,7 @@ origins = [
     "http://127.0.0.1",
     "http://localhost:3000"
 ]
-
+# 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup

@@ -15,3 +15,5 @@ async def websocket_endpoint(websocket: WebSocket):
             print(f" Mensagem recebida: {data}")
     except Exception:
         websocket_manager.disconnect()
+
+
