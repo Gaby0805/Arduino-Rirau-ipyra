@@ -3,6 +3,7 @@
 
 SoftwareSerial esp(8, 9); // RX, TX do Arduino -> TX/RX do ESP
 Servo meuServo;
+Servo meuServo2;
 
 const char* ssid = "SIM - URSO";
 const char* password = "moca0621";
@@ -24,6 +25,7 @@ void setup() {
   esp.begin(9600);
 
   meuServo.attach(5); // pino do Arduino ligado ao servo
+  meuServo.attach(6); // pino do Arduino ligado ao servo
 
   Serial.println("Iniciando ESP8266...");
 
@@ -71,7 +73,12 @@ void loop() {
 
 
 void ativarServo() {
-  meuServo.write(90); // gira servo para 90°
+  meuServo.write(90);
+    meuServo2.write(180); // gira servo para 90°
+ // gira servo para 90°
   delay(1000);        // mantém 1 segundo
-  meuServo.write(0);  // retorna para posição inicial
+  meuServo.write(0);
+    meuServo2.write(0);  // retorna para posição inicial
+  // retorna para posição inicial
 }
+
