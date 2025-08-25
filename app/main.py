@@ -1,12 +1,11 @@
 from fastapi import FastAPI
-from app.api.routes import auth, alarms_days, alarms, websocket
+from app.api.routes import auth, alarms_days, alarms
 from app.infra import jwt
 from app.core.database import Base, engine
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from app.scheduler import scheduler, load_alarms
 from fastapi.middleware.cors import CORSMiddleware
-
 Base.metadata.create_all(bind=engine)  # Cria tabelas no banco
 
 from contextlib import asynccontextmanager
@@ -52,4 +51,3 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(alarms.router)
 app.include_router(alarms_days.router)
-app.include_router(websocket.router)

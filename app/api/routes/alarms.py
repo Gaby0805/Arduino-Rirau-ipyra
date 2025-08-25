@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, status
 from typing import List
 from datetime import time as tm
-
+import httpx
 from app.models.alarms import Alarms
-from app.models.dto.alarms_base_model import AlarmCreate, AlarmResponse, AlarmUpdate
+from app.models.dto.alarms_base_model import AlarmCreate, AlarmResponse
 from app.services.alarm_service import AlarmsService
 from app.models.dto.user_base_model import User
 from app.api.routes.auth import get_current_user
+from app.utils.apiarduino import get_command
 
 router = APIRouter(prefix="/alarms", tags=["alarms"])
 
@@ -43,11 +44,6 @@ async def delete_alarm(
 ):
     service.delete_alarm(alarm_id)
 
-
-@router.post("/test/trigger")
-async def activate_alarm():
-    return await service.trigger_alarm()  # precisa do await!
-#    
-@router.get("/test/activate")
-def getcommand():
-    return service.get_command()
+@router.get("/test/check")
+async def check_commands():
+    return await get_command()

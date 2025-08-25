@@ -7,9 +7,7 @@ from app.exceptions.alarm_not_found_exception import AlarmNotFoundException
 from app.services.user_service import UserService
 from app.services.alarms_days_service import AlarmsDaysService
 from app import scheduler
-from app.core.manager import websocket_manager 
-
-
+from app.utils.apiarduino import get_command
 
 class AlarmsService:
 
@@ -91,18 +89,7 @@ class AlarmsService:
         return self.to_response(alarm)
 
 
-        return self.to_response(alarm)
     
-    async def trigger_alarm(self):
-        command = f"ALARME"
 
-        logging.info(f" Enviando via WebSocket")
-        await websocket_manager.send_to_arduino(command)
-        self.last_command = command
-        return {"status": "ok", "command": command}
-
-    def get_command(self):
-        cmd = self.last_command
-        self.last_command = None
-        return {"command": cmd}
-
+    async def get_commando(self):
+        return await get_command()

@@ -2,11 +2,11 @@ import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from app.core.manager import websocket_manager
 from datetime import datetime
 from app.core.database import SessionLocal
 from app.models import Alarms
 from pytz import timezone
+from app.utils.apiarduino import get_command
 
 # Configuração básica de logs
 logging.basicConfig(
@@ -23,8 +23,7 @@ scheduler = AsyncIOScheduler(timezone=tz_ms)
 async def trigger_alarm(alarm_id: int):
     """Função executada quando o alarme dispara."""
     logging.info(f"⏰ Disparando alarme ID={alarm_id} no horário {datetime.now()}")
-    await websocket_manager.send_to_arduino(f"ALARME:{alarm_id}")
-
+    await get_command()
 
 def load_alarms():
     """Carrega os alarmes ativos do banco e agenda no APScheduler para disparo no horário correto."""
