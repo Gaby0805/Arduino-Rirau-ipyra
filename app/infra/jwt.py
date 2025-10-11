@@ -21,7 +21,7 @@ class JWTService:
     def verify_password(self,plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
 
-    def get_password_hash(self, password):
+    def get_password_hash(self, password):    
         return self.pwd_context.hash(password)
     
     def orm_to_dict(self, obj):

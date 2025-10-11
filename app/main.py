@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.routes import auth, alarms_days, alarms
+from app.api.routes import auth, alarms_days, alarms, socket
 from app.infra import jwt
 from app.core.database import Base, engine
 from dotenv import load_dotenv
@@ -19,7 +19,10 @@ from app.scheduler import scheduler, load_alarms
 origins = [
     "http://localhost:8080",
     "http://localhost:3333",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "192.168.0.50"
+    "https://propenyl-lakeisha-nostalgically.ngrok-free.dev"
+    "wss://propenyl-lakeisha-nostalgically.ngrok-free.dev"
 ]
 
 
@@ -44,7 +47,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[origins],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,3 +58,4 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(alarms.router)
 app.include_router(alarms_days.router)
+app.include_router(socket.router)

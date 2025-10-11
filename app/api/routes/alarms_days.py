@@ -19,7 +19,7 @@ async def create_alarm_day(
 ):
     return service.create_alarm_day(alarm_day.alarm_id, alarm_day.day_of_week)
 
-
+   
 @router.get("/", response_model=List[AlarmDayResponse])
 async def get_all_alarm_days(
     current_user: User = Depends(get_current_user),
