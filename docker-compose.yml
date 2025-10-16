@@ -14,7 +14,7 @@ services:
       - DATABASE_URL=sqlite:///data/arduino-rirau-ipyra.db
     depends_on:
       - db-init
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 1
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 
 
   db-init:
     build:
