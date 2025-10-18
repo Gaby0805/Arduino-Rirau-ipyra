@@ -16,10 +16,10 @@ logging.basicConfig(
 scheduler = AsyncIOScheduler()
 
 
-def trigger_alarm(alarm_id: int):
+async def trigger_alarm(alarm_id: int):
     """Função executada quando o alarme dispara."""
     logging.info(f"⏰ Disparando alarme ID={alarm_id} no horário {datetime.now()}")
-    activate_socket("ALARME")
+    await activate_socket("ALARME")
 
 
 def load_alarms():
