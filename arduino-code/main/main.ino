@@ -1,84 +1,87 @@
-#include <SoftwareSerial.h>
+#include <ESP8266WiFi.h>
+#include <WebSocketsClient.h>
 #include <Servo.h>
+const char* ssid = "";
+const char* password = "";
 
-SoftwareSerial esp(8, 9); // RX, TX do Arduino -> TX/RX do ESP
+const char* websocket_server_host = "arduino-rirau-ipyra.onrender.com";
+const uint16_t websocket_server_port = 443; 
+const char* websocket_path = "/socket/";
+
 Servo meuServo;
 Servo meuServo2;
 
-const char* ssid = "SIM - URSO";
-const char* password = "moca0621";
+const int servoPin = D2;
+const int servoPin2 = D3;
 
-void sendCommand(String command, unsigned long timeout = 5000) {
-  esp.println(command);
-  unsigned long time = millis();
-  while (millis() - time < timeout) {
-    while (esp.available()) {
-      char c = esp.read();
-      Serial.write(c);
-    }
+const unsigned long tempoSegurar = 2000;
+
+WebSocketsClient webSocket;
+
+void moverServos() {
+  meuServo.write(90);
+  delay(tempoSegurar); 
+  meuServo.write(0);
+
+  meuServo2.write(180); 
+  delay(tempoSegurar); 
+
+  Serial.println("Servos ativados");
+
+
+  
+  meuServo2.write(0);
+
+  Serial.println("Servos retornaram à posição inicial");
+}
+
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+  switch (type) {
+    case WStype_DISCONNECTED:
+      Serial.println("WebSocket desconectado");
+      break;
+    case WStype_CONNECTED:
+      Serial.println("WebSocket conectado!");
+      webSocket.sendTXT("ESP8266 conectado");
+      break;
+    case WStype_TEXT:
+      Serial.printf("Mensagem recebida: %s\n", payload);
+
+      
+      if (String((char*)payload) == "ALARME") {
+        moverServos();
+      } 
+      break;
+    default:
+      break;
   }
-  Serial.println();
 }
 
 void setup() {
   Serial.begin(9600);
-  esp.begin(9600);
 
-  meuServo.attach(5); // pino do Arduino ligado ao servo
-  meuServo.attach(6); // pino do Arduino ligado ao servo
+  
+  WiFi.begin(ssid, password);
+  Serial.println("Conectando ao WiFi...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi conectado!");
+  Serial.println(WiFi.localIP());
 
-  Serial.println("Iniciando ESP8266...");
+  
+  meuServo.attach(servoPin);
+  meuServo.write(0);
+  meuServo2.attach(servoPin2);
+  meuServo2.write(0);
 
-  sendCommand("AT");
-  sendCommand("AT+CWMODE=1");
-
-  String cmd = "AT+CWJAP=\"" + String(ssid) + "\",\"" + String(password) + "\"";
-  sendCommand(cmd, 10000);
-
-  sendCommand("AT+CIFSR");
-  sendCommand("AT+CIPMUX=1");
-  sendCommand("AT+CIPSERVER=1,80");
-
-  Serial.println("Servidor iniciado. Acesse pelo navegador o IP mostrado acima.");
+  
+  webSocket.beginSSL(websocket_server_host, websocket_server_port, websocket_path);
+  webSocket.onEvent(webSocketEvent);
+  webSocket.setReconnectInterval(5000); 
 }
 
 void loop() {
-  if (esp.available()) {
-    String request = esp.readStringUntil('\n'); // lê uma linha da requisição
-    Serial.println(request);
-
-    // Checa se é uma requisição HTTP GET
-    if (request.indexOf("GET /") != -1) {
-      Serial.println("Requisição recebida! Ativando servo...");
-      ativarServo();
-
-      // Prepara resposta HTTP completa
-      String html = "HTTP/1.1 200 OK\r\n";
-      html += "Content-Type: text/html\r\n";
-      html += "Connection: close\r\n\r\n"; // importante: fecha conexão
-      html += "<!DOCTYPE html><html><body><h1>Servo ativado!</h1></body></html>";
-
-      // Informa ao ESP o tamanho da resposta
-      esp.print("AT+CIPSEND=0,");
-      esp.println(html.length());
-      delay(50); // pequeno delay para o ESP processar
-      esp.print(html);
-      delay(50);
-
-      // Fecha a conexão
-      sendCommand("AT+CIPCLOSE=0", 2000);
-    }
-  }
+  webSocket.loop();
 }
-
-
-void ativarServo() {
-  meuServo.write(90);
-    meuServo2.write(180); // gira servo para 90°
- // gira servo para 90°
-  delay(1000);        // mantém 1 segundo
-  meuServo.write(0);
-    meuServo2.write(0);  // retorna para posição inicial
-  // retorna para posição inicial
-}
-
