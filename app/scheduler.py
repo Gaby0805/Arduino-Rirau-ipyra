@@ -14,8 +14,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 tz_ms = timezone("America/Campo_Grande")
-scheduler = AsyncIOScheduler()
-
+scheduler = AsyncIOScheduler(timezone=tz_ms)
 
 async def trigger_alarm(alarm_id: int):
     """Função executada quando o alarme dispara."""
