@@ -6,6 +6,9 @@ from fastapi.responses import JSONResponse
 router = APIRouter(prefix="/socket", tags=["socket"])
 ws_manager = WebSocketManager()
 
+async def activate_socket(recado):
+    await ws_manager.send_to_device(recado)
+
 @router.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
     connected = await ws_manager.connect(websocket)
@@ -20,5 +23,5 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @router.post("/disparar-alarme")
 async def disparar_alarme():
-    await ws_manager.send_to_device("ALARME")
+    await activate_socket("ALARME")
     return JSONResponse(content={"status": "ALARME enviado"})
