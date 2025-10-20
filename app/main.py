@@ -23,7 +23,7 @@ origins = [
     "192.168.0.50",
     "https://propenyl-lakeisha-nostalgically.ngrok-free.dev",
     "wss://propenyl-lakeisha-nostalgically.ngrok-free.dev",
-    "https://web-arduino-coral.vercel.app/"
+    "https://web-arduino-coral.vercel.app"
 ]
 
 
