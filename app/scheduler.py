@@ -6,15 +6,15 @@ from datetime import datetime
 from app.core.database import SessionLocal
 from app.models import Alarms
 from app.api.routes.socket import activate_socket
+from pytz import timezone
 # Configuração básica de logs
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
-
-scheduler = AsyncIOScheduler()
-
+tz_ms = timezone("America/Campo_Grande")
+scheduler = AsyncIOScheduler(timezone=tz_ms)
 
 async def trigger_alarm(alarm_id: int):
     """Função executada quando o alarme dispara."""
