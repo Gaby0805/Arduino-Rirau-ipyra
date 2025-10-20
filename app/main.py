@@ -20,9 +20,10 @@ origins = [
     "http://localhost:8080",
     "http://localhost:3333",
     "http://localhost:3000",
-    "192.168.0.50"
-    "https://propenyl-lakeisha-nostalgically.ngrok-free.dev"
-    "wss://propenyl-lakeisha-nostalgically.ngrok-free.dev"
+    "192.168.0.50",
+    "https://propenyl-lakeisha-nostalgically.ngrok-free.dev",
+    "wss://propenyl-lakeisha-nostalgically.ngrok-free.dev",
+    "https://web-arduino-coral.vercel.app/"
 ]
 
 
